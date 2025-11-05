@@ -1,0 +1,33 @@
+name: Deploy Streamlit App
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      DUNE_API_KEY: ${{ secrets.DUNE_API_KEY }}
+      CHAIN_ID_ETH: ${{ secrets.CHAIN_ID_ETH }}
+      CHAIN_ID_POLYGON: ${{ secrets.CHAIN_ID_POLYGON }}
+      COPM_TOKEN_ADDRESS: ${{ secrets.COPM_TOKEN_ADDRESS }}
+      COPW_TOKEN_ADDRESS: ${{ secrets.COPW_TOKEN_ADDRESS }}
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Build Docker image
+        run: docker build -t mi-dashboard .
+
+      - name: Run Docker container with secrets
+        run: |
+          docker run -d -p 8501:8501 \
+            -e DUNE_API_KEY \
+            -e CHAIN_ID_ETH \
+            -e CHAIN_ID_POLYGON \
+            -e COPM_TOKEN_ADDRESS \
+            -e COPW_TOKEN_ADDRESS \
+            mi-dashboard
