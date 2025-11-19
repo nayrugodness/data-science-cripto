@@ -21,7 +21,7 @@ class DashboardService:
     def __init__(self):
         """Initialize the dashboard service with Dune API"""
         self.api = DuneAPI()
-        self.decimals = 18
+        self.decimals = 18  # Blockchain storage uses 18 decimals (wei format)
     
     def get_holders_data(self) -> Tuple[pd.DataFrame, pd.DataFrame]:
         """
@@ -46,9 +46,9 @@ class DashboardService:
             df: Raw holders DataFrame
             
         Returns:
-            DataFrame with display columns
+            DataFrame with display columns and formatted balance
         """
-        return prepare_holder_display_columns(df)
+        return prepare_holder_display_columns(df, decimals=self.decimals)
     
     def get_metrics(self, df_copm: pd.DataFrame, df_copw: pd.DataFrame) -> Tuple[Dict[str, Any], Dict[str, Any]]:
         """

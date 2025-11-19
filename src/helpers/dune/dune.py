@@ -96,23 +96,38 @@ def create_comparison_dataframe(copm_df: pd.DataFrame, copw_df: pd.DataFrame) ->
 
 
 def prepare_holder_display_columns(df: pd.DataFrame, 
-                                   columns: List[str] = None) -> pd.DataFrame:
+                                   columns: List[str] = None,
+                                   decimals: int = 6) -> pd.DataFrame:
     """
     Prepare DataFrame for display with specific columns
     
     Args:
         df: DataFrame with holder data
-        columns: List of columns to include (default: wallet_address, balance, 
+        columns: List of columns to include (default: wallet_address, balance_token, 
                 has_initiated_transfer, first_acquired)
+        decimals: Number of decimals for the token (default: 6)
         
     Returns:
-        DataFrame with selected columns
+        DataFrame with selected columns and formatted balance
     """
     if columns is None:
-        columns = ['wallet_address', 'balance', 'has_initiated_transfer', 'first_acquired']
+        # Use balance_token (already normalized) instead of balance (raw)
+        columns = ['wallet_address', 'balance_token', 'has_initiated_transfer', 'first_acquired']
     
     if df.empty:
         return df
     
     available_columns = [col for col in columns if col in df.columns]
-    return df[available_columns] if available_columns else df
+    display_df = df[available_columns].copy() if available_columns else df.copy()
+    
+    # Format balance_token column with commas and 2 decimals
+    if 'balance_token' in display_df.columns:
+        display_df['balance_token'] = display_df['balance_token'].apply(
+            lambda x: f"{x:,.2f}" if pd.notna(x) else "0.00"
+        )
+    
+    # Rename for better display
+    if 'balance_token' in display_df.columns:
+        display_df.rename(columns={'balance_token': 'balance'}, inplace=True)
+    
+    return display_df
